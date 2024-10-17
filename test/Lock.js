@@ -166,7 +166,37 @@ describe("BankAccount", function () {
         })
 
         describe("make a Withdraw",()=>{
-            
+            it("it should allow creator of request to withdraw approved request", async() =>{
+                const {bankAccount,addr0, addr1} = await deployBankAccountWithAccounts(2,100,[100]);
+
+                await bankAccount.connect(addr1).approveWithdrawl(0,0);
+
+                await expect(bankAccount.connect(addr0).withdraw(0,0)).to.changeEtherBalances([bankAccount,addr0],["-100","100"])
+            })
+
+            it("it should not allow creator of request to withdraw approved request twice", async() =>{
+                const {bankAccount,addr0, addr1} = await deployBankAccountWithAccounts(2,200,[100]);
+
+                await bankAccount.connect(addr1).approveWithdrawl(0,0);
+
+                await expect(bankAccount.connect(addr0).withdraw(0,0)).to.changeEtherBalances([bankAccount,addr0],["-100","100"])
+
+                await expect(bankAccount.connect(addr0).withdraw(0,0)).to.be.reverted;
+            })
+
+            it("should not allow non-creator of request to withdraw approved request", async() =>{
+                const {bankAccount,addr1} = await deployBankAccountWithAccounts(2,200,[100]);
+
+                await bankAccount.connect(addr1).approveWithdrawl(0,0);
+
+                await expect(bankAccount.connect(addr1).withdraw(0,0)).to.be.reverted;
+            })
+
+            it("should not allow creator of request to withdraw non-approved request", async() =>{
+                const {bankAccount,addr0} = await deployBankAccountWithAccounts(2,200,[100]);
+
+                await expect(bankAccount.connect(addr0).withdraw(0,0)).to.be.reverted;
+            })
         })
     })
 
