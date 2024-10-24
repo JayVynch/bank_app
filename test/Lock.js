@@ -200,4 +200,11 @@ describe("BankAccount", function () {
         })
     })
 
+    describe("View users accounts",()=>{
+        it("can allow users view accounts", async ()=>{
+            const {bankAccount, addr0} = await loadFixture(deployBankAccount);
+            await bankAccount.connect(addr0).getAccounts();
+        })
+    })
+
 });

@@ -4,51 +4,51 @@ contract BankAccount
 {
     event Deposit(
         address indexed user, 
-        uint indexed accountId, 
-        uint amount, 
-        uint timestamp
+        uint256 indexed accountId, 
+        uint256 amount, 
+        uint256 timestamp
     );
 
     event WithdrawalRequested(
         address indexed user, 
-        uint indexed accountId, 
-        uint withdrawalId, 
-        uint amount, 
-        uint timestamp
+        uint256 indexed accountId, 
+        uint256 withdrawalId, 
+        uint256 amount, 
+        uint256 timestamp
     );
 
     event Withdraw(
-        uint withdrawalId,
-        uint timestamp
+        uint256 withdrawalId,
+        uint256 timestamp
     );
 
     event AccountCreated(
         address[] owners,
-        uint indexed ids,
-        uint timestamp
+        uint256 indexed ids,
+        uint256 timestamp
     );
 
     struct WithdrawRequest{
         address user;
-        uint amount;
-        uint approvals;
+        uint256 amount;
+        uint256 approvals;
         mapping(address => bool) ownersApproved;
         bool approved;
     }
 
     struct Account{
         address[] owners;
-        uint balance;
+        uint256 balance;
         mapping(uint => WithdrawRequest) withdrawRequests;
     }
 
-    mapping(uint => Account) accounts;
-    mapping(address => uint[]) userAccounts;
+    mapping(uint256 => Account) accounts;
+    mapping(address => uint256[]) public userAccounts;
 
-    uint nextAccountId;
-    uint nextWithdrawalId;
+    uint256 nextAccountId;
+    uint256 nextWithdrawalId;
 
-    modifier AccountOwner(uint accountId)
+    modifier AccountOwner(uint256 accountId)
     {
         bool isOwner;
         for (uint idx; idx < accounts[accountId].owners.length; idx++) {
@@ -80,7 +80,7 @@ contract BankAccount
         _;
     }
 
-    modifier sufficientBalance(uint accountId, uint amount)
+    modifier sufficientBalance(uint256 accountId, uint256 amount)
     {
         require(accounts[accountId].balance >= amount,"You do not have sufficient balance");
         _;
@@ -105,7 +105,7 @@ contract BankAccount
         _;
     }
 
-    modifier canWithdraw(uint accountId, uint withdrawId)
+    modifier canWithdraw(uint256 accountId, uint256 withdrawId)
     {
         require(accounts[accountId].withdrawRequests[withdrawId].user == msg.sender,"You do not own this account");
 
@@ -113,7 +113,7 @@ contract BankAccount
         _;
     }
 
-    function deposit(uint accountId) external payable AccountOwner(accountId)
+    function deposit(uint256 accountId) external payable AccountOwner(accountId)
     {
         accounts[accountId].balance += msg.value;
     }
@@ -146,7 +146,7 @@ contract BankAccount
         }
     }
 
-    function requestWithdrawl(uint accountId, uint amount) external AccountOwner(accountId) sufficientBalance(accountId, amount)
+    function requestWithdrawl(uint256 accountId, uint256 amount) external AccountOwner(accountId) sufficientBalance(accountId, amount)
     {
         uint256 id = nextWithdrawalId;
 
@@ -159,7 +159,7 @@ contract BankAccount
         emit WithdrawalRequested(msg.sender, accountId, id, amount, block.timestamp);
     }
 
-    function approveWithdrawl(uint accountId, uint withdrawId) external AccountOwner(accountId) canApprove(accountId, withdrawId)
+    function approveWithdrawl(uint256 accountId, uint256 withdrawId) external AccountOwner(accountId) canApprove(accountId, withdrawId)
     {
         WithdrawRequest storage request = accounts[accountId].withdrawRequests[withdrawId];
         request.approvals++;
@@ -170,7 +170,7 @@ contract BankAccount
         }
     }
 
-    function withdraw(uint accountId, uint withdrawId) external canWithdraw(accountId, withdrawId)
+    function withdraw(uint256 accountId, uint256 withdrawId) external canWithdraw(accountId, withdrawId)
     {
         uint amount = accounts[accountId].withdrawRequests[withdrawId].amount;
 
